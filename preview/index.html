@@ -29,7 +29,7 @@ summary{cursor:pointer}.btn{font:inherit;font-weight:700;background:var(--acc);c
 .it{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line);align-items:flex-start}.it:first-of-type{border-top:0}.it .k{flex:none;width:66px;font-weight:900}.it .v{flex:1}.it .p{flex:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:1px 7px;background:#f1f1f1;color:#555}.it .p.full{background:var(--gs);color:var(--g)}
 .it.done .v{color:var(--g);font-weight:700}
 .ms{padding:10px 0;border-top:1px solid var(--line)}.ms:first-of-type{border-top:0}.ms .m{margin-top:4px}
-.ok{color:var(--g)}.er{color:var(--r)}
+.gain{color:var(--g)}.warn{color:#A3141F;font-size:12.5px;font-weight:700}.ok{color:var(--g)}.er{color:var(--r)}
 .chip{display:inline-flex;gap:6px;align-items:center;background:#F2F2F2;border-radius:999px;padding:3px 6px 3px 12px;margin:3px;font-size:13.5px}.chip button{border:0;background:#fff;border-radius:999px;cursor:pointer;padding:0 8px}
 .foot{max-width:760px;margin:10px auto 0;position:relative;height:96px;overflow:hidden}.foot .bni{position:absolute;left:16px;bottom:16px;height:26px}.foot .sw{position:absolute;right:0;bottom:0;height:96px}
 .mfoot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px}.mfoot img.bni{height:20px;margin:0 0 6px 4px}.mfoot img.sw{height:50px}
@@ -115,7 +115,7 @@ function compute(){const six=S.six,five=S.five;const m6=meetings(six.meta.from,s
  S.ctx={W6:m6.n,W5:m5.n,m6,mN,Mn:mN.n,nm:nm+1,om};
  const MAXM=Math.max(...six.mem.map(m=>m.meet));V=six.mem.map(a=>{const b=five.mem.find(x=>x.name==a.name)||{name:a.name,absn:0,ref:0,o2o:0,gst:0,val:0,edu:0,meet:0};
   const mid=a.meet<MAXM-CONFIG.NEW_MEMBER_GAP;/* 只用來顯示「新會員」標籤 */const W6=Math.max(1,a.meet),W5=Math.max(1,b.meet);/* 平均的分母＝自己在 PALMS 有紀錄的例會次數（出席+缺席+遲到+病假+代理） */
-  const cur=score(a,W6),plan=solveFull(b,W5+S.ctx.Mn,S.ctx.Mn),ms=CONFIG.LIGHTS.filter(l=>l.min>0&&l.min>cur.t).reverse().map(l=>({l,r:solve(b,W5+S.ctx.Mn,S.ctx.Mn,l.min)}));
+  const cur=score(a,W6),plan=solveFull(b,W5+S.ctx.Mn,S.ctx.Mn),ms=CONFIG.LIGHTS.filter(l=>l.min>0&&l.min>cur.t).reverse().map(l=>({l}));
   return{name:a.name,a,b,mid,W6,W5,cur,plan,ms,pp:plan.reduce((x,y)=>x+y.pts,0),total:cur.t}});render()}
 const pill=l=>`<span class="pill p-${l.c}">${l.name}</span>`;
 function weekCheck(){const C=S.ctx,mx=d=>Math.max(...d.mem.map(m=>m.meet));const m5=meetings(S.five.meta.from,S.five.meta.to);
@@ -136,17 +136,26 @@ function rules(){const I=CONFIG.ITEMS,f=k=>I[k].levels.map(l=>`${l.op=='gt'?'超
 function itemLine(o,x){const k=x.k,it=CONFIG.ITEMS[k],C=S.ctx,curFull=o.cur.s[k]>=x.full;let v,done=false;
  if(k=='att'){if(x.pts>=x.full){v=`下個月要做到：<b>全勤 ${C.Mn} 次</b>，這項就滿分`;if(curFull){v=`👏 出席滿分！下個月 <b>全勤 ${C.Mn} 次</b> 就繼續保持`;done=true}}
   else v=`缺席紀錄還在計算期間內，下個月這項最高 ${x.pts} 分；請<b>全勤 ${C.Mn} 次</b>，缺席滾出期間後就能回到滿分`}
- else if(x.n>0){const nm={ref:'引薦',o2o:'一對一',gst:'來賓',edu:'培訓'}[k],W=o.W5+C.Mn,cs=o.cur.s[k],wt=n=>k=='val'?`交易價值 ${fmt(n)} 元`:`${it.verb} ${fmt(n)} ${it.unit}${nm}`,what=wt(x.n);
+ else if(x.n>0){const nm={ref:'引薦',o2o:'一對一',gst:'來賓',edu:'培訓'}[k],W=o.W5+C.Mn,cs=itemPts(k,o.b,W),wt=n=>k=='val'?`交易價值 ${fmt(n)} 元`:`${it.verb} ${fmt(n)} ${it.unit}${nm}`,what=wt(x.n);
   const up=it.levels.filter(l=>l.pts>cs).sort((a,b)=>a.pts-b.pts);
   if(up.length>=2){const nt=up[0],nn=needFor(k,nt,o.b,W);v=`下個月<b>${wt(nn)}</b>，這項就多 ${nt.pts-cs} 分<div class="s">衝滿分要${what}</div>`}
   else v=curFull?`👏 目前滿分！下個月要做到：<b>${what}</b>，就能保持滿分`:`下個月要做到：<b>${what}</b>，這項就滿分`}
  else{done=true;v=curFull?'👏 已經滿分，累計夠了，照現在的步調繼續就好！':'👏 累計已經夠，下個月這項就會滿分！'}
  return`<div class="it${done?' done':''}"><div class="k">${it.label}</div><div class="v">${v}</div><div class="p${curFull?' full':''}">${o.cur.s[k]}/${x.full}</div></div>`}
 const ORD={att:0,o2o:1,ref:2,gst:3,edu:4,val:5},UN={ref:'引薦 # 筆',o2o:'一對一 # 次',gst:'來賓 # 位',edu:'培訓 # 學分',val:'交易價值 # 元'};
-function msText(r){const C=S.ctx;return[...r.acc].sort((a,b)=>ORD[a.k]-ORD[b.k]).map(x=>x.k=='att'?(x.pts>0?(x.allow==0?`全勤 ${C.Mn} 次`:`出席至少 ${C.Mn-x.allow} 次`):''):(x.n>0?UN[x.k].replace('#',fmt(x.n)):'')).filter(Boolean).join('、')||'照目前步調就會達到'}
+function menu(o){const C=S.ctx,W=o.W5+C.Mn,b=o.b,rows=[];let P0=0;
+ for(const k of KEYS){const it=CONFIG.ITEMS[k],full=maxPts(k),c=o.cur.s[k];
+  if(k=='att'){const p0=itemPts('att',b,W),p1=itemPts('att',{absn:b.absn+1},W);P0+=p0;rows.push({k,keep:true,t:`全勤 ${C.Mn} 次`,g:p0,txt:`<b>全勤 ${C.Mn} 次</b>（必守）→ 保住 ${p0} 分${p0>p1?`；每缺 1 次就會掉分（缺 1 次 −${p0-p1} 分）`:''}${p0<full?`<div class="s">缺席紀錄還在計算期間內，這項下個月最高 ${p0} 分</div>`:''}`});continue}
+  const p0=itemPts(k,b,W);P0+=p0;if(p0>=full){rows.push({k,txt:'<span class="ok">✓ 已滿分</span>'});continue}
+  const nm={ref:'引薦',o2o:'一對一',gst:'來賓',edu:'培訓'}[k],wt=n=>k=='val'?`交易價值 ${fmt(n)} 元`:`${it.verb} ${fmt(n)} ${it.unit}${nm}`;
+  const up=it.levels.filter(l=>l.pts>p0).sort((a,b)=>a.pts-b.pts),nt=up[0],top=up[up.length-1];
+  let t=`下個月<b>${wt(needFor(k,nt,b,W))}</b> → <b class="gain">+${nt.pts-p0} 分</b>`;
+  if(p0<c)t+=`<div class="warn">必守：不做的話，舊月份滾掉後這項會從 ${c} 分掉到 ${p0} 分</div>`;
+  if(top!==nt)t+=`<div class="s">滿分要 ${wt(needFor(k,top,b,W))} → +${top.pts-p0} 分</div>`;rows.push({k,txt:t})}
+ return{P0,rows}}
 function detail(name){const o=V.find(x=>x.name==name),C=S.ctx,L=o.cur.l,nf=KEYS.filter(k=>o.cur.s[k]>=maxPts(k)).length;
  let h=`<div class="hero"><div class="nm">${o.name}${o.mid?' <span class="new">新會員</span>':''}</div><div class="lamp bg-${L.c}">${o.cur.t}</div><div class="ln c-${L.c}">${L.name}・${o.cur.t} 分</div><div class="bar"><i class="bg-${L.c}" style="width:${o.cur.t}%"></i></div><div class="to">目標 100 分｜目前 ${nf} 項滿分（近 6 個月）</div></div>`;
- if(o.ms.length)h+=`<div class="goal"><h3>${C.nm}月的里程碑</h3><div class="s">${C.nm}月預計 ${C.Mn} 次例會；以下是最省力的組合</div>`+o.ms.map(m=>`<div class="ms"><span class="pill p-${m.l.c}">上${m.l.name}（${m.l.min}分）</span><div class="m">${m.r.ok?`下個月要做到：<b>${msText(m.r)}</b>`:`下個月最多可到 ${m.r.p} 分，還差一點；先做到：<b>${msText(m.r)}</b>`}</div></div>`).join('')+`</div>`;
+ if(o.ms.length){const M=menu(o);h+=`<div class="goal"><h3>${C.nm}月怎麼往上</h3><div class="s">${C.nm}月預計 ${C.Mn} 次例會；全勤、其他照目前累計，${C.nm}月底預估 <b>${M.P0} 分</b></div>`+o.ms.map(m=>{const N=m.l.min-M.P0;return`<div class="ms"><span class="pill p-${m.l.c}">上${m.l.name}（${m.l.min}分）</span> ${N>0?`還差 <b>${N} 分</b>`:'<span class="ok">全勤就會達到</span>'}</div>`}).join('')+[...M.rows].sort((a,b)=>ORD[a.k]-ORD[b.k]).map(r=>`<div class="it"><div class="k">${CONFIG.ITEMS[r.k].label}</div><div class="v">${r.txt}</div></div>`).join('')+`<div class="s" style="margin-top:6px">任選幾項，加起來達到還差的分數即可</div></div>`}
  else h+=`<div class="goal" style="text-align:center"><b>已經是綠燈 👍 下一步：衝滿分 100</b></div>`;
  h+=`<div class="goal"><h3>${C.nm}月每項衝滿分</h3><div class="s" style="margin-bottom:4px"><b>${C.nm}月預計 ${C.Mn} 次例會</b>${C.mN.skip.length?'（休會：'+C.mN.skip.join('、')+'）':''}</div>`;
  h+=[...o.plan].sort((a,b)=>ORD[a.k]-ORD[b.k]).map(x=>itemLine(o,x)).join('');
