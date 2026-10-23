@@ -1,0 +1,152 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>大貴分會｜紅綠燈查詢（v15 預覽）</title>
+<style>
+:root{--bg:#F7F4EF;--ink:#2B2A28;--sub:#7A766F;--line:#ECE7DF;--acc:#CF2030;--g:#3E9B6E;--y:#C8901F;--r:#C9524A;--x:#8F8B84;--gs:#E6F3EC;--ys:#FBF1DC;--rs:#F8E4E2;--xs:#EFEEEB}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 48px}header{padding:24px 0 10px}.brand{font-size:13px;color:var(--acc);font-weight:600;letter-spacing:.18em}h1{font-size:23px;margin:4px 0}
+.pv{background:#FFF3CD;color:#7a5a00;border-radius:10px;padding:6px 12px;font-size:13px;margin-top:8px}
+.meta{font-size:12.5px;color:var(--sub)}.card{background:#fff;border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 6px 20px rgba(40,30,20,.05)}
+input,select{font:inherit;font-size:17px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;width:100%;background:#FBFAF8}
+.sg{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}.p-g{background:var(--gs);color:var(--g)}.p-y{background:var(--ys);color:var(--y)}.p-r{background:var(--rs);color:var(--r)}.p-x{background:var(--xs);color:var(--x)}
+.s{color:var(--sub);font-size:12.5px}.new{font-size:11px;color:#9A6B12;background:#FBF1DC;border-radius:6px;padding:1px 6px;margin-left:6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;white-space:nowrap}th{color:var(--sub);font-weight:500;font-size:12px;text-align:right;padding:6px;border-bottom:1px solid var(--line);cursor:pointer}td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}tbody tr{cursor:pointer}.tw{overflow-x:auto}
+.btn{font:inherit;background:var(--ink);color:#fff;border:0;border-radius:12px;padding:10px 16px;cursor:pointer}.btn.l{background:#F2EEE8;color:var(--ink)}
+#modal{position:fixed;inset:0;background:rgba(30,25,20,.4);display:none;align-items:center;justify-content:center;z-index:9}
+#mc{background:var(--bg);width:100%;max-width:480px;max-height:94vh;overflow:auto;border-radius:22px;padding:16px}
+.hero{border-radius:18px;padding:18px;color:#fff;text-align:center}.hero .nm{font-size:18px;font-weight:600}.hero .big{font-size:44px;font-weight:700;line-height:1.15}.hero .big small{font-size:20px;font-weight:600;margin-left:6px}
+.bg-g{background:#3E9B6E}.bg-y{background:#D8A23A}.bg-r{background:#C9524A}.bg-x{background:#9A968F}
+.roll{background:#fff;border-radius:14px;padding:10px 14px;margin-top:10px;font-size:14.5px}
+.goal{background:#fff;border-radius:18px;padding:14px 16px;margin-top:10px}.goal h3{margin:0 0 4px;color:var(--acc);font-size:17px}
+.it{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);align-items:baseline}.it:first-of-type{border-top:0}.it .k{flex:none;width:70px;font-weight:600}.it .v{flex:1}.it .p{flex:none;color:var(--sub);font-size:12.5px}
+.cheer{color:var(--g);font-size:13px}
+.ok{color:var(--g)}.er{color:var(--r)}
+.chip{display:inline-flex;gap:6px;align-items:center;background:#F2EEE8;border-radius:999px;padding:3px 6px 3px 12px;margin:3px;font-size:13.5px}.chip button{border:0;background:#fff;border-radius:999px;cursor:pointer;padding:0 8px}
+</style></head><body><div class="wrap">
+<header><div class="brand">BNI 大貴分會</div><h1>紅綠燈查詢</h1><div class="meta" id="dates"></div><div class="pv">預覽版 v15：新計分方式，正式網址尚未更新</div></header>
+<div class="card"><input id="q" placeholder="輸入你的名字查詢" autocomplete="off"><div id="sug"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><select id="sel"></select><button class="btn l" id="golist" style="flex:none">全部名單</button></div></div>
+<div class="card" id="sum"></div>
+<details class="card" id="dl"><summary><b>全部名單</b> <span class="s">（點名字看詳細）</span></summary><div class="tw"><table><thead><tr id="th"></tr></thead><tbody id="tb"></tbody></table></div></details>
+<details class="card"><summary><b>評分標準</b></summary><div id="rules"></div></details>
+<details class="card" id="adm"><summary><b>幹部：臨時休會設定</b></summary>
+<p class="s">遇到颱風假等臨時休會，選日期按「標記休會」，系統會把那次例會從週數扣掉（6 個月平均和下個月例會次數都會跟著改）。按日期旁的 ✕ 可以取消。</p>
+<input id="code" type="password" placeholder="上傳碼" style="margin-bottom:8px"><div style="display:flex;gap:8px"><input id="cd" type="date"><input id="cn" placeholder="原因（例如：颱風假）"></div>
+<button class="btn" id="cadd" style="margin-top:8px;width:100%">標記休會</button><div id="cmsg" class="s" style="margin-top:6px"></div><div id="clist" style="margin-top:8px"></div><div id="chk" style="margin-top:12px"></div></details>
+</div><div id="modal"><div id="mc"></div></div>
+<script>
+/* =====================================================================
+   計分設定（所有門檻都在這裡，要改分數線只改這一段）
+   op: 'ge' = 大於等於，'gt' = 大於
+   ===================================================================== */
+const CONFIG={
+  LIGHTS:[{min:70,name:'綠燈',c:'g'},{min:50,name:'黃燈',c:'y'},{min:30,name:'紅燈',c:'r'},{min:0,name:'灰燈',c:'x'}],
+  GREEN:70,
+  ITEMS:{
+    att:{label:'出席',kind:'absence',levels:[{max:0,pts:20},{max:1,pts:15},{max:2,pts:10}]},           // 6 個月缺席次數，3 次以上 0 分
+    ref:{label:'引薦',kind:'weekly',unit:'筆',verb:'給',levels:[{v:1.5,op:'ge',pts:20},{v:1.2,op:'ge',pts:15},{v:1,op:'ge',pts:10},{v:0.75,op:'ge',pts:5}]},
+    o2o:{label:'一對一',kind:'weekly',unit:'次',verb:'做',levels:[{v:2,op:'ge',pts:15},{v:1,op:'ge',pts:10},{v:0.5,op:'ge',pts:5}]},
+    gst:{label:'來賓',kind:'per4w',unit:'位',verb:'帶',levels:[{v:2,op:'ge',pts:15},{v:1,op:'ge',pts:10}]},
+    val:{label:'交易價值',kind:'total',unit:'元',verb:'',levels:[{v:2000000,op:'gt',pts:15},{v:800000,op:'ge',pts:10},{v:400000,op:'ge',pts:5}]},
+    edu:{label:'培訓',kind:'total',unit:'學分',verb:'上',levels:[{v:6,op:'ge',pts:15},{v:4,op:'ge',pts:10},{v:2,op:'ge',pts:5}]}
+  },
+  ABSENCE_INCLUDES_SICK:true,        // 病假算缺席（遲到、代理人算出席）
+  NEW_MEMBER_GAP:3,                  // 自己的例會紀錄比分會最多者少超過 3 次才標「新會員」（只是標籤，不影響計分）
+  EFFORT:{att:0.5,ref:1,o2o:1,edu:2,gst:3,valPer:100000}  // 算「最省力組合」用的權重
+};
+const KEYS=['att','ref','o2o','gst','val','edu'];
+// 行政院人事行政總處辦公日曆表 115/116 年，週五放假日（含補假）
+const HOL={"20260220":"補假","20260227":"補假","20260403":"補假","20260501":"勞動節","20260619":"端午節","20260925":"中秋節","20261009":"國慶日補假","20261225":"行憲紀念日","20270101":"開國紀念日","20270205":"農曆除夕","20270430":"補假","20271224":"補假","20271231":"補假"};
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbx2fs4o-tFsxncqBdV2msYY09REU9GwuFZ5KEPNT39FtC5kawXMyWyVFC3n3edJyb9awQ/exec';
+// 已知的臨時休會（後台上線後會寫進 cancelled 分頁）
+const DEFAULT_CANCEL=[{date:'2026-06-26',note:'颱風休會'}];
+const PREVIEW_CODE='20161104'; // 只在後台還沒支援休會時，預覽版用來在本機檢查上傳碼
+
+const num=s=>parseFloat(String(s||'').replace(/,/g,''))||0, fmt=v=>Math.round(v).toLocaleString('zh-TW');
+const key=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+const iso=d=>key(d).replace(/(\d{4})(\d\d)(\d\d)/,'$1-$2-$3');
+let CANCEL=[],BACKEND_CANCEL=false,S=null,V=[],sortK='total',sortD=-1;
+function build(rows){const hi=rows.findIndex(r=>r[0]=='姓氏');const h=rows[hi].map(s=>(s||'').trim()),c=k=>h.indexOf(k);const meta={};
+ rows.slice(0,hi).forEach((r,i)=>{const lab=r[0]||'',val=r.filter(x=>x).slice(1).pop()||'';if(lab.startsWith('分會:'))meta.chapter=val;if(lab.startsWith('從'))meta.from=val.slice(0,10);if(lab.startsWith('至'))meta.to=val.slice(0,10);if(lab=='營運使用者'&&rows[i+1])meta.run=(rows[i+1][3]||'').slice(0,10)});
+ const mem=[];for(const r of rows.slice(hi+1)){const ln=(r[0]||'').trim(),fn=(r[c('名字')]||'').trim();if(!ln||!fn||['來賓','BNI','總數'].includes(ln))continue;const g=k=>num(r[c(k)]);
+  mem.push({name:ln+fn,present:g('出席'),abs:g('缺席'),late:g('遲到'),sick:g('病假'),sub:g('替代人'),ref:g('提供內部引薦')+g('提供外部引薦'),o2o:g('一對一會面'),gst:g('來賓'),edu:g('分會教育單位'),val:g('交易價值')})}
+ mem.forEach(m=>{m.meet=m.present+m.abs+m.late+m.sick+m.sub;m.absn=m.abs+(CONFIG.ABSENCE_INCLUDES_SICK?m.sick:0)});
+ const cnt={};mem.forEach(m=>cnt[m.meet]=(cnt[m.meet]||0)+1);meta.palmsN=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];return{meta,mem}}
+// 期間內實際例會週數：週五、扣國定放假日、扣臨時休會
+function meetings(from,to){const out=[],skip=[];const d=new Date(from+'T00:00:00'),e=new Date(to+'T00:00:00');while(d<=e){if(d.getDay()==5){const k=key(d),c=CANCEL.find(x=>x.date==iso(d));if(HOL[k])skip.push(`${d.getMonth()+1}/${d.getDate()} ${HOL[k]}`);else if(c)skip.push(`${d.getMonth()+1}/${d.getDate()} ${c.note||'臨時休會'}`);else out.push(iso(d))}d.setDate(d.getDate()+1)}return{n:out.length,skip}}
+const hit=(x,l)=>l.op=='gt'?x>l.v:x>=l.v+(-1e-9);
+function itemPts(k,m,W){const it=CONFIG.ITEMS[k];if(it.kind=='absence'){const l=it.levels.find(l=>m.absn<=l.max);return l?l.pts:0}
+ const x=it.kind=='weekly'?m[k]/W:it.kind=='per4w'?m[k]/W*4:m[k];const l=it.levels.find(l=>hit(x,l));return l?l.pts:0}
+const light=t=>CONFIG.LIGHTS.find(l=>t>=l.min);
+function score(m,W){const s={};let t=0;for(const k of KEYS){s[k]=itemPts(k,m,W);t+=s[k]}return{s,t,l:light(t)}}
+const maxPts=k=>Math.max(...CONFIG.ITEMS[k].levels.map(l=>l.pts));
+// 需要的總數 → 下個月要再加多少
+function needFor(k,l,base,W){const it=CONFIG.ITEMS[k];let tot=it.kind=='weekly'?l.v*W:it.kind=='per4w'?l.v*W/4:l.v;
+ let n=l.op=='gt'?Math.floor(tot+1e-9)+(k=='val'?1:1):Math.ceil(tot-1e-9);return Math.max(0,n-base[k])}
+function solve(base,W,Mn){ // W = 下個月結束後的新週數
+ const E=CONFIG.EFFORT,opts=KEYS.map(k=>{const it=CONFIG.ITEMS[k],o=[];
+  if(k=='att'){o.push({k,pts:0,allow:Mn,cost:0});for(const l of it.levels){const allow=l.max-base.absn;if(allow>=0)o.push({k,pts:l.pts,allow:Math.min(allow,Mn),cost:(Mn-Math.min(allow,Mn))*E.att})}}
+  else{o.push({k,pts:0,n:0,cost:0});for(const l of it.levels){const n=needFor(k,l,base,W);o.push({k,pts:l.pts,n,cost:k=='val'?n/E.valPer:n*E[k]})}}
+  return o});
+ let best=null,top=null;(function rec(i,acc){if(i==KEYS.length){const p=acc.reduce((a,x)=>a+x.pts,0),c=acc.reduce((a,x)=>a+x.cost,0);
+   if(p>=CONFIG.GREEN&&(!best||c<best.c-1e-9||(Math.abs(c-best.c)<1e-9&&p>best.p)))best={c,p,acc};if(!top||p>top.p||(p==top.p&&c<top.c))top={c,p,acc};return}
+  for(const o of opts[i])rec(i+1,[...acc,o])})(0,[]);
+ return best?{ok:true,...best}:{ok:false,...top}}
+function compute(){const six=S.six,five=S.five;const m6=meetings(six.meta.from,six.meta.to),m5=meetings(five.meta.from,six.meta.to);
+ const nx=new Date(six.meta.to+'T00:00:00');nx.setDate(nx.getDate()+1);const ny=nx.getFullYear(),nm=nx.getMonth();const last=new Date(ny,nm+1,0);
+ const mN=meetings(iso(new Date(ny,nm,1)),iso(last));const om=+six.meta.from.slice(5,7);
+ S.ctx={W6:m6.n,W5:m5.n,m6,mN,Mn:mN.n,nm:nm+1,om};
+ const MAXM=Math.max(...six.mem.map(m=>m.meet));V=six.mem.map(a=>{const b=five.mem.find(x=>x.name==a.name)||{name:a.name,absn:0,ref:0,o2o:0,gst:0,val:0,edu:0,meet:0};
+  const mid=a.meet<MAXM-CONFIG.NEW_MEMBER_GAP;/* 只用來顯示「新會員」標籤 */const W6=Math.max(1,a.meet),W5=Math.max(1,b.meet);/* 平均的分母＝自己在 PALMS 有紀錄的例會次數（出席+缺席+遲到+病假+代理） */
+  const cur=score(a,W6),roll=score(b,W5),plan=solve(b,W5+S.ctx.Mn,S.ctx.Mn);
+  return{name:a.name,a,b,mid,W6,W5,cur,roll,plan,total:cur.t,rt:roll.t}});render()}
+const pill=l=>`<span class="pill p-${l.c}">${l.name}</span>`;
+function weekCheck(){const C=S.ctx,mx=d=>Math.max(...d.mem.map(m=>m.meet));const m5=meetings(S.five.meta.from,S.five.meta.to);
+ const rows=[['最近 6 個月',S.six.meta,C.m6.n,mx(S.six)],['最近 5 個月',S.five.meta,m5.n,mx(S.five)]];const bad=rows.filter(r=>r[2]!=r[3]);
+ const tx=r=>`${r[0]}（${r[1].from.slice(5).replace('-','/')}–${r[1].to.slice(5).replace('-','/')}）：行事曆 ${r[2]} 次、PALMS 最多 ${r[3]} 次`;
+ const html=bad.length?`<div style="background:#F8E4E2;color:#8a2b24;border-radius:12px;padding:10px 12px;font-size:13.5px"><b>⚠ 例會次數對不上</b><br>${rows.map(r=>(r[2]!=r[3]?'✕ ':'✓ ')+tx(r)).join('<br>')}<br>${bad.map(r=>r[2]>r[3]?`行事曆多算 ${r[2]-r[3]} 次：期間內可能有臨時休會（例如颱風假）沒有標記，請在「幹部：臨時休會設定」標記那天。`:`行事曆少算 ${r[3]-r[2]} 次：可能有標錯的休會日期，或有額外加開的例會，請檢查休會清單。`).join('<br>')}</div>`
+  :`<div style="background:#E6F3EC;color:#2f6e4f;border-radius:12px;padding:10px 12px;font-size:13.5px"><b>✓ 例會次數檢查通過</b><br>${rows.map(tx).join('<br>')}</div>`;
+ return{bad:bad.length>0,html}}
+function render(){const C=S.ctx,n=V.length,WC=weekCheck();$('chk').innerHTML=WC.html;const cnt=key=>CONFIG.LIGHTS.map(l=>`${pill(l)} <b>${V.filter(o=>o[key].l.name==l.name).length}</b>`).join('　');
+ document.getElementById('sum').innerHTML=`<div class="s">全體 ${n} 位會員</div><p style="margin:6px 0">現在：${cnt('cur')}</p><p style="margin:6px 0">${C.om}月紀錄滾掉後：${cnt('roll')}</p>${WC.bad?'<div style="margin:8px 0">'+WC.html.replace('例會次數對不上','幹部請注意：例會次數對不上')+'</div>':''}<p class="s" style="margin:0">6 個月內例會 ${C.W6} 次${C.m6.skip.length?'；休會：'+C.m6.skip.join('、'):''}<br>${C.nm}月例會 ${C.Mn} 次${C.mN.skip.length?'（休會：'+C.mN.skip.join('、')+'）':''}</p>`;
+ const cols=[['name','姓名'],['total','現在'],['rt',`${C.om}月滾掉後`]];
+ document.getElementById('th').innerHTML=cols.map(([k,l])=>`<th data-k="${k}">${l}</th>`).join('');
+ document.getElementById('tb').innerHTML=[...V].sort((x,y)=>{const a=x[sortK],b=y[sortK];return(typeof a=='string'?a.localeCompare(b,'zh-Hant'):a-b)*sortD}).map(o=>`<tr data-n="${o.name}"><td>${o.name}${o.mid?'<span class="new">新會員</span>':''}</td><td>${pill(o.cur.l)} ${o.cur.t}</td><td>${pill(o.roll.l)} ${o.roll.t}</td></tr>`).join('');
+ document.getElementById('sel').innerHTML='<option value="">或從名單選擇…</option>'+[...V].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant-TW-u-co-stroke')).map(o=>`<option>${o.name}</option>`).join('');
+ rules();sug()}
+function rules(){const I=CONFIG.ITEMS,f=k=>I[k].levels.map(l=>`${l.op=='gt'?'超過 ':''}${k=='val'?fmt(l.v/10000)+' 萬':l.v}${I[k].kind=='weekly'?'/週':I[k].kind=='per4w'?'/每4週':''}→${l.pts}`).join('、');
+ document.getElementById('rules').innerHTML=`<ul style="padding-left:18px;margin:0;font-size:14px;line-height:1.8"><li>出席（6 個月缺席次數，病假算缺席）：0 次→20、1 次→15、2 次→10、3 次以上→0</li><li>引薦（每週平均）：${f('ref')}</li><li>一對一（每週平均）：${f('o2o')}</li><li>來賓（每 4 週平均）：${f('gst')}</li><li>交易價值（6 個月）：${f('val')}</li><li>培訓（6 個月學分，取 PALMS「分會教育單位」）：${f('edu')}</li><li>平均＝6 個月內總數 ÷ 自己在 PALMS 有紀錄的例會次數；下個月預估＝最近 5 個月自己的次數＋下個月例會次數（週五，扣國定假日與臨時休會）</li><li>70 分以上綠燈、50 黃燈、30 紅燈、30 以下灰燈</li></ul>`}
+function itemLine(o,x){const k=x.k,it=CONFIG.ITEMS[k],C=S.ctx,curFull=o.cur.s[k]>=maxPts(k);let v;
+ if(k=='att'){v=x.pts==0?(o.b.absn>=3?'缺席紀錄還在範圍內，這項暫時拿不到分，請盡量出席':'這次目標不靠出席分數，但請盡量出席'):x.allow==0?`全勤（${C.Mn} 次例會都出席）`:`最多可缺 ${x.allow} 次（至少出席 ${C.Mn-x.allow} 次）`}
+ else v=x.n>0?(k=='val'?`交易價值 ${fmt(x.n)} 元`:`${it.verb} ${fmt(x.n)} ${it.unit}${it.label=='培訓'?'':''}${k=='ref'?'引薦':k=='o2o'?'一對一':k=='gst'?'來賓':'培訓'}`):x.pts>0?'目前的累計已經夠，照常就好':`這次可以先不衝（目前 ${o.cur.s[k]} 分）`;
+ const cheer=curFull&&x.pts>=maxPts(k)?`<div class="cheer">👏 目前滿分，繼續保持！</div>`:'';
+ return`<div class="it"><div class="k">${it.label}</div><div class="v">下個月要做到：<b>${v}</b>${cheer}</div><div class="p">→ ${x.pts} 分</div></div>`}
+function detail(name){const o=V.find(x=>x.name==name),C=S.ctx,g=o.cur.l.name=='綠燈',p=o.plan;
+ let h=`<div class="hero bg-${o.cur.l.c}"><div class="nm">${o.name}${o.mid?' <span class="new">新會員</span>':''}</div><div class="big">${o.cur.l.name}<small>${o.cur.t} 分</small></div><div style="font-size:13px;opacity:.9">現在（近 6 個月）</div></div>`;
+ h+=`<div class="roll">${C.om}月紀錄滾掉後：<b>${o.roll.t} 分，${o.roll.l.name}</b></div>`;
+ h+=`<div class="goal"><h3>${g?'要維持綠燈':'要上綠燈'}，${C.nm}月要做到多少</h3><div class="s"><b>${C.nm}月預計 ${C.Mn} 次例會</b>${C.mN.skip.length?'（休會：'+C.mN.skip.join('、')+'）':''}</div>`;
+ if(!p.ok)h+=`<p class="er" style="margin:6px 0">${C.nm}月就算每項都做到，最高 ${p.p} 分（${light(p.p).name}），還到不了 70 分；先照下面做，之後再補上。</p>`;
+ const ord={att:0,o2o:1,ref:2,gst:3,edu:4,val:5};h+=[...p.acc].sort((a,b)=>ord[a.k]-ord[b.k]).map(x=>itemLine(o,x)).join('');
+ h+=`<div class="s" style="margin-top:6px">做到後 ${C.nm}月底預估：<b>${p.p} 分，${light(p.p).name}</b></div></div>`;
+ const a=o.a;h+=`<details class="goal"><summary class="s">目前各項紀錄</summary><div class="s" style="line-height:1.9">例會 ${o.W6} 週・缺席 ${a.absn}・引薦 ${a.ref}（每週 ${(a.ref/o.W6).toFixed(2)}）・一對一 ${a.o2o}（每週 ${(a.o2o/o.W6).toFixed(2)}）・來賓 ${a.gst}（每4週 ${(a.gst/o.W6*4).toFixed(2)}）・交易價值 ${fmt(a.val)} 元・培訓 ${a.edu}<br>${KEYS.map(k=>CONFIG.ITEMS[k].label+' '+o.cur.s[k]).join('・')}<br>平均以你自己在 PALMS 有紀錄的 ${o.W6} 次例會計算</div></details>`;
+ h+=`<button class="btn" style="width:100%;margin-top:12px" onclick="modal.style.display='none'">關閉</button>`;mc.innerHTML=h;modal.style.display='flex';mc.scrollTop=0}
+function sug(){const q=document.getElementById('q').value.trim(),el=document.getElementById('sug');if(!q){el.innerHTML='';return}const r=V.filter(o=>o.name.includes(q)).slice(0,6);
+ el.innerHTML=r.length?r.map(o=>`<div class="sg" data-n="${o.name}"><span>${o.name}${o.mid?'<span class="new">新會員</span>':''}</span>${pill(o.cur.l)}</div>`).join(''):'<p class="s">找不到這個名字</p>'}
+const $=id=>document.getElementById(id),modal=$('modal'),mc=$('mc');
+$('q').oninput=sug;$('sug').onclick=e=>{const d=e.target.closest('.sg');if(d)detail(d.dataset.n)};$('tb').onclick=e=>{const t=e.target.closest('tr');if(t)detail(t.dataset.n)};
+$('sel').onchange=e=>{if(e.target.value){detail(e.target.value);e.target.value=''}};$('golist').onclick=()=>{$('dl').open=true;$('dl').scrollIntoView({behavior:'smooth'})};
+$('th').onclick=e=>{const k=e.target.dataset.k;if(!k)return;sortD=sortK==k?-sortD:-1;sortK=k;render()};modal.onclick=e=>{if(e.target==modal)modal.style.display='none'};
+// ---- 臨時休會 ----
+function showCancel(){$('clist').innerHTML=CANCEL.length?CANCEL.sort((a,b)=>a.date<b.date?-1:1).map(c=>`<span class="chip">${c.date.replace(/-/g,'/')} ${c.note||''}<button data-d="${c.date}">✕</button></span>`).join(''):'<span class="s">目前沒有標記臨時休會</span>';
+ if(!BACKEND_CANCEL)$('cmsg').innerHTML='預覽版：雲端後台還沒更新，標記只存在這台裝置，用來試算。'}
+async function cancelOp(action,date,note){const code=$('code').value.trim();if(!code){$('cmsg').innerHTML='<span class="er">請輸入上傳碼</span>';return}
+ if(BACKEND_CANCEL){const r=await fetch(APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,code,date,note})});const j=await r.json();if(!j.ok){$('cmsg').innerHTML=`<span class="er">${j.error}</span>`;return}CANCEL=j.cancelled}
+ else{if(code!==PREVIEW_CODE){$('cmsg').innerHTML='<span class="er">上傳碼錯誤</span>';return}CANCEL=action=='cancel'?[...CANCEL.filter(c=>c.date!=date),{date,note}]:CANCEL.filter(c=>c.date!=date);localStorage.setItem('tl_cancel',JSON.stringify(CANCEL))}
+ showCancel();compute();$('cmsg').innerHTML+=` <span class="ok">✓ 已更新</span>`}
+$('cadd').onclick=()=>{const d=$('cd').value;if(!d){$('cmsg').innerHTML='<span class="er">請選日期</span>';return}if(new Date(d+'T00:00:00').getDay()!=5&&!confirm('這天不是星期五，確定要標記？'))return;cancelOp('cancel',d,$('cn').value.trim()||'臨時休會')};
+$('clist').onclick=e=>{const d=e.target.dataset.d;if(d&&confirm(`取消 ${d} 的休會標記？`))cancelOp('uncancel',d)};
+async function init(){let j;try{j=window.PRELOAD||await (await fetch(APPS_SCRIPT_URL+'?api=1&t='+Date.now(),{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('beforeend','<p class="er">雲端資料讀取失敗</p>');return}
+ if(Array.isArray(j.cancelled)){BACKEND_CANCEL=true;CANCEL=j.cancelled}else{CANCEL=JSON.parse(localStorage.getItem('tl_cancel')||'null')||DEFAULT_CANCEL.slice()}if(location.search.includes('sim=nocancel'))CANCEL=[];
+ const ds=j.data.rows.map(build).sort((a,b)=>a.meta.from<b.meta.from?-1:1);S={six:ds[0],five:ds[1]};const m=S.six.meta;
+ $('dates').innerHTML=`資料期間 ${m.from.replace(/-/g,'/')} – ${m.to.replace(/-/g,'/')}　雲端更新 ${new Date(j.updatedAt).toLocaleString('zh-TW',{hour12:false})}`;showCancel();compute();if(location.hash=='#adm'){$('adm').open=true}else if(location.hash.length>1)detail(decodeURIComponent(location.hash.slice(1)))}
+init();
+</script></body></html>
